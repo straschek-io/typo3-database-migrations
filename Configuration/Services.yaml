@@ -1,0 +1,51 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  StraschekIo\DatabaseMigrations\DependencyFactoryProvider: ~
+
+  database_migrations.dependency_factory:
+    class: Doctrine\Migrations\DependencyFactory
+    factory: ['@StraschekIo\DatabaseMigrations\DependencyFactoryProvider', 'provide']
+
+  Doctrine\Migrations\Tools\Console\Command\GenerateCommand:
+    autoconfigure: false
+    arguments:
+      $dependencyFactory: '@database_migrations.dependency_factory'
+      $name: 'migrations:generate'
+    tags:
+      - { name: console.command, command: 'migrations:generate', description: 'Generate a new blank migration from the boilerplate template', schedulable: false }
+
+  Doctrine\Migrations\Tools\Console\Command\MigrateCommand:
+    autoconfigure: false
+    arguments:
+      $dependencyFactory: '@database_migrations.dependency_factory'
+      $name: 'migrations:migrate'
+    tags:
+      - { name: console.command, command: 'migrations:migrate', description: 'Execute pending doctrine migrations', schedulable: false }
+
+  Doctrine\Migrations\Tools\Console\Command\StatusCommand:
+    autoconfigure: false
+    arguments:
+      $dependencyFactory: '@database_migrations.dependency_factory'
+      $name: 'migrations:status'
+    tags:
+      - { name: console.command, command: 'migrations:status', description: 'Show doctrine migrations status', schedulable: false }
+
+  Doctrine\Migrations\Tools\Console\Command\ListCommand:
+    autoconfigure: false
+    arguments:
+      $dependencyFactory: '@database_migrations.dependency_factory'
+      $name: 'migrations:list'
+    tags:
+      - { name: console.command, command: 'migrations:list', description: 'List doctrine migrations and their status', schedulable: false }
+
+  Doctrine\Migrations\Tools\Console\Command\VersionCommand:
+    autoconfigure: false
+    arguments:
+      $dependencyFactory: '@database_migrations.dependency_factory'
+      $name: 'migrations:version'
+    tags:
+      - { name: console.command, command: 'migrations:version', description: 'Manually add or remove a migration version', schedulable: false }
