@@ -8,9 +8,19 @@
         "doctrine/migrations": "^3.9",
         "typo3/cms-core": "^13.0"
     },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5",
+        "typo3/coding-standards": "^0.9"
+    },
     "autoload": {
         "psr-4": {
             "StraschekIo\\DatabaseMigrations\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "StraschekIo\\DatabaseMigrations\\Tests\\": "Tests/"
         }
     },
     "config": {
@@ -24,5 +34,20 @@
         "typo3/cms": {
             "extension-key": "database_migrations"
         }
+    },
+    "scripts": {
+        "ci": [
+            "@ci:composer:validate",
+            "@ci:yaml:lint",
+            "@ci:php:cs",
+            "@ci:php:stan",
+            "@ci:php:unit"
+        ],
+        "ci:composer:validate": "@composer validate --strict",
+        "ci:php:cs": "php-cs-fixer fix --dry-run --diff",
+        "ci:php:stan": "phpstan analyse --no-progress",
+        "ci:php:unit": "phpunit",
+        "ci:yaml:lint": "yaml-lint Configuration",
+        "fix:php:cs": "php-cs-fixer fix"
     }
 }
