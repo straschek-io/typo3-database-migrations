@@ -7,6 +7,12 @@ Schema changes stay with TYPO3 (`ext_tables.sql` / `database:updateschema`) —
 this extension is for data: content that has to change together with a code
 deploy (template switches, CType renames, backfills).
 
+## Installation
+
+```
+composer require straschek-io/typo3-database-migrations
+```
+
 ## Commands
 
 ```
