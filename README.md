@@ -51,6 +51,25 @@ vendor/bin/typo3 migrations:generate
 
 In deployments: `migrations:migrate --no-interaction --allow-no-migration`
 
+## Rollback
+
+`migrations:migrate` can also migrate downwards — `down()` of the affected
+migrations is executed:
+
+```
+vendor/bin/typo3 migrations:migrate prev --no-interaction    # one version back
+vendor/bin/typo3 migrations:migrate first --no-interaction   # all the way back
+vendor/bin/typo3 migrations:migrate 'DoctrineMigrations\VersionYYYYMMDDHHMMSS' --no-interaction
+```
+
+A complete release rollback consists of two steps that belong together:
+rolling back the code release with the deployment tool (`dep rollback` with
+Deployer; with Surf, switch the release symlink back to the previous release)
+**and** `migrations:migrate prev` on the target system — otherwise old code
+runs against migrated data. `down()` is best effort for content migrations (it
+cannot reconstruct editorial changes made in the meantime); the robust safety
+net remains a database dump before the deployment.
+
 ## Writing migrations
 
 `migrations:generate` creates `migrations/Version<timestamp>.php` in the
