@@ -127,3 +127,14 @@ itself.
   `database:updateschema` creates it on fresh installations before the first
   migration run. The column definitions must stay in sync with what
   doctrine/migrations creates.
+
+## Development
+
+```
+composer ci               # all checks: validate, yaml lint, coding standards, phpstan, unit tests
+composer ci:php:unit      # unit tests only
+composer fix:php:cs       # apply coding standards fixes
+```
+
+The GitHub Actions workflow runs the same checks on PHP 8.3 and the unit tests
+on PHP 8.2, 8.3 and 8.4.
