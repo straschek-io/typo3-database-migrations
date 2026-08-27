@@ -85,8 +85,19 @@ Rules:
 
 Example: `Documentation/Examples/ContentMigrationExample.php`
 
-## Deployment
+## Deployment recipes
 
-Deployer: require `Resources/Private/Deployment/DeployerTasks.php` in your
-`deploy.php` and add `typo3:migrations:migrate` to the deploy task list, after
-`typo3:extension:setup` and before the cache tasks.
+**Deployer** (in `deploy.php`):
+
+```php
+require __DIR__ . '/vendor/straschek-io/typo3-database-migrations/Resources/Private/Deployment/DeployerTasks.php';
+// add 'typo3:migrations:migrate' to the deploy task list,
+// after typo3:extension:setup and before the cache tasks
+```
+
+**TYPO3 Surf** (in the deployment definition, requires typo3/surf in the project):
+
+```php
+require __DIR__ . '/vendor/straschek-io/typo3-database-migrations/Resources/Private/Deployment/SurfTasks.php';
+\StraschekIo\DatabaseMigrations\Deployment\registerDatabaseMigrationsTask($deployment);
+```
