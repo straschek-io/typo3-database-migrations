@@ -42,11 +42,11 @@ composer require straschek-io/typo3-database-migrations
 ## Commands
 
 ```
-vendor/bin/typo3 migrations:status
-vendor/bin/typo3 migrations:list
-vendor/bin/typo3 migrations:migrate
-vendor/bin/typo3 migrations:version
-vendor/bin/typo3 migrations:generate
+vendor/bin/typo3 migrations:status    # overview: available/executed migrations
+vendor/bin/typo3 migrations:list      # list all migrations with their status
+vendor/bin/typo3 migrations:migrate   # execute pending migrations
+vendor/bin/typo3 migrations:version   # manually mark a version as (not) executed
+vendor/bin/typo3 migrations:generate  # create a new boilerplate migration
 ```
 
 In deployments: `migrations:migrate --no-interaction --allow-no-migration`
@@ -70,21 +70,6 @@ runs against migrated data. `down()` is best effort for content migrations (it
 cannot reconstruct editorial changes made in the meantime); the robust safety
 net remains a database dump before the deployment.
 
-## Writing migrations
-
-`migrations:generate` creates `migrations/Version<timestamp>.php` in the
-project root (namespace `DoctrineMigrations`, no autoload entry needed).
-Create the directory once and keep it in git.
-
-Rules:
-
-- migrations must be idempotent — guard every change with a SELECT first
-- work directly on `$this->connection` instead of `addSql()`
-- never change an executed migration, write a new one instead
-- one migration per logical change
-
-Example: `Documentation/Examples/ContentMigrationExample.php`
-
 ## Deployment recipes
 
 **Deployer** (in `deploy.php`):
@@ -101,3 +86,38 @@ require __DIR__ . '/vendor/straschek-io/typo3-database-migrations/Resources/Priv
 require __DIR__ . '/vendor/straschek-io/typo3-database-migrations/Resources/Private/Deployment/SurfTasks.php';
 \StraschekIo\DatabaseMigrations\Deployment\registerDatabaseMigrationsTask($deployment);
 ```
+
+## Creating a new migration
+
+```
+vendor/bin/typo3 migrations:generate
+```
+
+creates `migrations/Version<YmdHis>.php` (current UTC timestamp) in the
+**project root** from the bundled boilerplate template
+(`Resources/Private/Templates/Migration.tpl`): `getDescription()` stub, empty
+`up()`/`down()` with the idempotency reminder in place, and `isTransactional()`
+already disabled. Fill in the description and the guarded data changes — see
+`Documentation/Examples/ContentMigrationExample.php` for a filled-in example.
+
+Migrations live in `<projectRoot>/migrations` by convention — fixed, not
+configurable — so they are versioned with the project instead of being wiped
+with `vendor/` on the next install. Create the directory once (with a
+`.gitkeep`) and commit it. The classes use the `DoctrineMigrations` namespace;
+no composer autoload entry is needed, doctrine's finder loads the files
+itself.
+
+## Ground rules
+
+- One migration per logical change; `getDescription()` names the ticket.
+- **Content migrations are always idempotent** (SELECT-guarded): deployments
+  repeat, and manually prepared environments must not be migrated twice.
+- Select-then-update logic runs directly on `$this->connection`
+  (`fetchAllAssociative`, `fetchOne`, `update`, `insert`) instead of `addSql()`.
+  The warning "migration did not result in any SQL statements" is expected then.
+- Never modify an executed migration afterwards — corrections are new
+  migrations.
+- Implement `down()` when the change is cleanly reversible (enables real
+  rollback); otherwise `throwIrreversibleMigrationException`.
+- Schema changes stay with TYPO3 (`ext_tables.sql` + `database:updateschema`);
+  this extension is for content/data only.
