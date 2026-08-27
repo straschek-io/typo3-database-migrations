@@ -1,11 +1,37 @@
 # database_migrations
 
-Versioned database content migrations for TYPO3 via doctrine/migrations. Uses
-the TYPO3 default connection, no separate database configuration needed.
+Versioned database content migrations via doctrine/migrations, wired to the
+TYPO3 default connection (ConnectionPool). Ships deployment recipes for
+Deployer and TYPO3 Surf so pending migrations run automatically on every
+deployment.
 
-Schema changes stay with TYPO3 (`ext_tables.sql` / `database:updateschema`) —
-this extension is for data: content that has to change together with a code
-deploy (template switches, CType renames, backfills).
+## What this is — and what it is not
+
+This extension does **not** do schema or TCA migrations. Tables and columns
+stay entirely with TYPO3's own mechanisms (`ext_tables.sql`,
+`database:updateschema`, core upgrade wizards).
+
+It is for the changes those mechanisms cannot express: versioned **data**
+migrations that belong to a specific code change and must run exactly once per
+environment, in guaranteed order, on every stage. Realistic examples:
+
+- A relaunch switches list plugins to a new template layout. The deploy that
+  ships the new Fluid template also has to flip `settings.templateLayout` in
+  the FlexForm of every affected content element — on staging, production and
+  every developer machine, without manual clicks (this is what the bundled
+  example migration does).
+- A refactoring renames a CType or moves a plugin option to another field. All
+  existing tt_content rows must be rewritten in the same release that removes
+  the old rendering definition — otherwise the elements silently disappear
+  from the frontend.
+- A column is split (one address field into street, zip and city). The new
+  columns come from `ext_tables.sql` as usual, but the one-time backfill that
+  parses the existing rows into them is a migration — tracked per environment
+  and visible in `migrations:status`.
+
+Unlike upgrade wizards, migrations are plain project-versioned PHP classes that
+run automatically during deployment — no Install Tool interaction, a defined
+execution order, and a rollback path via `down()`.
 
 ## Installation
 
