@@ -121,3 +121,9 @@ itself.
   rollback); otherwise `throwIrreversibleMigrationException`.
 - Schema changes stay with TYPO3 (`ext_tables.sql` + `database:updateschema`);
   this extension is for content/data only.
+- The `doctrine_migration_versions` table is declared in this extension's
+  `ext_tables.sql` and therefore "managed" from TYPO3's point of view — the
+  Install Tool database compare never offers to drop it, and
+  `database:updateschema` creates it on fresh installations before the first
+  migration run. The column definitions must stay in sync with what
+  doctrine/migrations creates.
